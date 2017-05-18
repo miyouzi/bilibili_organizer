@@ -7,6 +7,10 @@
 - [**弹弹Play**](http://www.dandanplay.com/)
 - [**BiliLocal（似乎已停止更新）**](https://github.com/AncientLysine/BiliLocal)
 
+## 更新记录
+### V1.1更新-20170518
+- 修复当视频分段数超过10会发生的分段合并顺序错乱的问题。
+- 目前能确保分段数在1000以下的视频分段合并顺序正确。
 
 ## 功能
 - 一键执行B站安卓客户端缓存导入Windows后的整理工作。

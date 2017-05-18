@@ -2,7 +2,7 @@
 @echo off
 chcp 65001 >nul
 setlocal ENABLEDELAYEDEXPANSION
-title BiliBili安卓客户端视频一键整理工具V1.0
+title BiliBili安卓客户端视频一键整理工具V1.1
 cd /D "%~dp0"
 set xml2ass="%~dp0【Danmu2Ass】\Danmu2Ass.exe"
 set /A danmu2assErrorLevel=1
@@ -553,16 +553,24 @@ goto :eof
 	echo ==============================================================
 	cd /D %madpath%
 	if exist *.mp4 (
-			dir /A:-D /B /O:E /O:N | findstr .mp4$ >tmp.txt
+			rem dir /A:-D /B /O:E /O:N | findstr .mp4$ >tmp.txt
+			dir /A:-D /B /O:E /O:N | findstr "^[0-9]\.mp4$" >tmp.txt
+			dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9]\.mp4$" >>tmp.txt
+			dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9][0-9]\.mp4$" >>tmp.txt
 		) else (
 			if exist *.flv (
-				dir /A:-D /B /O:E /O:N | findstr .flv$ >tmp.txt
+				REM dir /A:-D /B /O:E /O:N | findstr .flv$ >tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9]\.flv$" >tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9]\.flv$" >>tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9][0-9]\.flv$" >>tmp.txt
 				) else (
-				dir /A:-D /B /O:E /O:N | findstr .blv$ >tmp.txt
+				REM dir /A:-D /B /O:E /O:N | findstr .blv$ >tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9]\.blv$" >tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9]\.blv$" >>tmp.txt
+				dir /A:-D /B /O:E /O:N | findstr "^[0-9][0-9][0-9]\.blv$" >>tmp.txt
 				)
 		)
 	set str=
-	REM for /F "delims=" %%i in (tmp.txt) do set str=!str! -cat "%%i"
 	del /q merge.ini >nul
 	for /F "delims=" %%i in (tmp.txt) do echo file %%i>>merge.ini
 	REM call %mp4box% !str! -new "merge.mp4"

@@ -2,7 +2,7 @@
 @echo off
 chcp 65001 >nul
 setlocal ENABLEDELAYEDEXPANSION
-title BiliBili安卓客户端视频一键整理工具V1.1
+title BiliBili安卓客户端视频一键整理工具V2.0
 cd /D "%~dp0"
 set xml2ass="%~dp0【Danmu2Ass】\Danmu2Ass.exe"
 set /A danmu2assErrorLevel=1
@@ -126,6 +126,7 @@ goto :eof
 		call :check_error
 		set fanju=%%i
 		call :readindex
+		call :read_index_title
 		call :madcounter
 		cd ..
 		if !UserSetting9! equ 1 ( call :Rule3_movefiles1 ) else ( call :Rule3_movefiles2 )
@@ -152,14 +153,14 @@ goto :eof
 
 :Rule3_movefiles1
 	call :check_error
-	cmd /C for /R "%cd%\!fanju!" %%j in (*danmaku.xml,*.mp4,*.flv) do move "%%~fj" ".\!index!。!name!-第!index!集%%~xj" >nul 2>nul
-	cmd /C for /R "%cd%\!fanju!" %%j in (*.blv) do move "%%~fj" ".\!index!。!name!-第!index!集.mp4" >nul 2>nul
+	cmd /C for /R "%cd%\!fanju!" %%j in (*danmaku.xml,*.mp4,*.flv) do move "%%~fj" ".\!index!。!name!-第!index!集!indextitle!%%~xj" >nul 2>nul
+	cmd /C for /R "%cd%\!fanju!" %%j in (*.blv) do move "%%~fj" ".\!index!。!name!-第!index!集!indextitle!.mp4" >nul 2>nul
 goto :eof
 
 :Rule3_movefiles2
 	call :check_error
-	cmd /C for /R "%cd%\!fanju!" %%j in (*danmaku.xml,*.mp4,*.flv,*.blv) do move "%%~fj" ".\!name!-第!index!集%%~xj" >nul 2>nul
-	cmd /C for /R "%cd%\!fanju!" %%j in (*.blv) do move "%%~fj" ".\!name!-第!index!集.mp4" >nul 2>nul
+	cmd /C for /R "%cd%\!fanju!" %%j in (*danmaku.xml,*.mp4,*.flv) do move "%%~fj" ".\!name!-第!index!集!indextitle!%%~xj" >nul 2>nul
+	cmd /C for /R "%cd%\!fanju!" %%j in (*.blv) do move "%%~fj" ".\!name!-第!index!集!indextitle!.mp4" >nul 2>nul
 goto :eof
 
 :UserSettings
@@ -212,6 +213,11 @@ goto :eof
 		choice /C yn /M "对于番剧目录是否在文件名前添加序列？【Y为Yes，N为No】"
 				if !errorlevel! equ 1 ( @echo 对于番剧目录是否在文件名前添加序列？【值为1为是，0为否】：1 >>Settings.ini ) else ( @echo 对于番剧目录是否在文件名前添加序列？【值为1为是，0为否】：0 >>Settings.ini )
 		echo.
+		
+		choice /C yn /M "对于番剧是否添加集标题后缀？（如果有）【Y为Yes，N为No】"
+				if !errorlevel! equ 1 ( @echo 对于番剧是否添加集标题后缀？（如果有）【值为1为是，0为否】：1 >>Settings.ini ) else ( @echo 对于番剧是否添加集标题后缀？（如果有）【值为1为是，0为否】：0 >>Settings.ini )
+		echo.
+		
 		choice /C yn /M "是否隐藏配置文件？【输入Y为Yes，N为No】"
 			if !errorlevel! equ 1 attrib Settings.ini +h
 		echo.
@@ -227,12 +233,13 @@ goto :eof
 	set /A UserSetting6=0
 	set /A UserSetting7=0
 	set /A UserSetting8=0
-	set /A UserSetting9=-1
+	set /A UserSetting9=0
+	set /A UserSetting10=-1
 	for /F "tokens=2 delims=：" %%i in (Settings.ini) do (
 		set /A UserSetting!jjj!=%%i
 		set /A jjj+=1
 		)
-	if !UserSetting9! equ -1 (
+	if !UserSetting10! equ -1 (
 		echo ==============================================================
 		echo 　　　　　　　　　　　！！ＥＲＲＯＲ！！
 		echo.
@@ -497,6 +504,7 @@ goto :eof
 	call :check_error
 	REM if not exist entry.json.ansi.txt call :md_UTF8_2_ANSI
 	for /F "tokens=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26 delims=>|<!" %%a in (entry.json) do set "index=%%a%%b%%c%%d%%e%%f%%g%%h%%i%%j%%k%%l%%m%%n%%o%%p%%q%%r%%s%%d%%u%%v%%w%%x%%y%%z"
+	set "index=!index:index_title=!"
 	set "index=!index:*index=!"
 	set "index=!index:"=!"
 	set "index=!index:?=？!"
@@ -506,6 +514,33 @@ goto :eof
 	set "index=!index:~1!"
 	for /f "tokens=1 delims=," %%a in ("!index!") do set "index=%%a"
 	for /F "tokens=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26 delims=*" %%a in ("%index%") do set "index=%%a%%b%%c%%d%%e%%f%%g%%h%%i%%j%%k%%l%%m%%n%%o%%p%%q%%r%%s%%d%%u%%v%%w%%x%%y%%z"
+goto :eof
+
+:read_index_title
+	if %UserSetting10% equ 0 (
+		set "indextitle="
+		goto :eof
+		)
+	for /F "tokens=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26 delims=>|<!" %%a in (entry.json) do set "indextitle=%%a%%b%%c%%d%%e%%f%%g%%h%%i%%j%%k%%l%%m%%n%%o%%p%%q%%r%%s%%d%%u%%v%%w%%x%%y%%z"
+	set "indextitle=!indextitle:*index_title=!"
+	set "indextitle=!indextitle:"=!"
+	set "indextitle=!indextitle:?=？!"
+	set "indextitle=!indextitle:\=!"
+	set "indextitle=!indextitle:/=!"
+	set "indextitle=!indextitle::=：!"
+	set "indextitle=!indextitle:}=!"
+	set "indextitle=!indextitle:~1!"
+	for /f "tokens=1 delims=," %%a in ("!indextitle!") do set "indextitle=%%a"
+	for /F "tokens=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26 delims=*" %%a in ("%indextitle%") do set "indextitle=%%a%%b%%c%%d%%e%%f%%g%%h%%i%%j%%k%%l%%m%%n%%o%%p%%q%%r%%s%%d%%u%%v%%w%%x%%y%%z"
+	if "!indextitle!"=="!index!" set "indextitle=Null"
+	if "!indextitle!"=="page：0" set "indextitle=Null"
+	if "!indextitle!"=="0!index!" set "indextitle=Null"
+	if "!indextitle!"=="00!index!" set "indextitle=Null"
+	if "!indextitle!"=="Null" (
+		set "indextitle="
+		) else (
+		set "indextitle=-!indextitle!"
+		)
 goto :eof
 
 :madcounter
